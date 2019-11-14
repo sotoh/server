@@ -10,11 +10,12 @@ const Server = use('Server')
 |
 | Global middleware are executed on each http request only when the routes
 | match.
-|
+| 'Adonis/Middleware/AuthInit'
 */
 const globalMiddleware = [
   'Adonis/Middleware/BodyParser',
-  'App/Middleware/ConvertEmptyStringsToNull'
+  'App/Middleware/ConvertEmptyStringsToNull',
+  'Adonis/Middleware/AuthInit'
 ]
 
 /*
@@ -36,7 +37,9 @@ const globalMiddleware = [
 */
 const namedMiddleware = {
   auth: 'Adonis/Middleware/Auth',
-  guest: 'Adonis/Middleware/AllowGuestOnly'
+  guest: 'Adonis/Middleware/AllowGuestOnly',
+  authadmin: 'App/Middleware/AdminDetector',
+  authauditor: 'App/Middleware/AuditorDetector'
 }
 
 /*

@@ -72,9 +72,51 @@ module.exports = {
     uid: 'email',
     password: 'password',
     options: {
+      secret: Env.get('APP_KEY'),
+      expiresIn: 6000
+    }
+  },
+  jwtUsername: {
+    serializer: 'lucid',
+    model: 'App/Models/User',
+    scheme: 'jwt',
+    uid: 'username',
+    password: 'password',
+    options: {
+      secret: Env.get('APP_KEY'),
+      expiresIn: 6000
+    }
+  },/*
+  admin: {
+    serializer: 'lucid',
+    model: 'App/Models/Admin',
+    scheme: 'jwt',
+    uid: 'email',
+    password: 'password',
+    options: {
       secret: Env.get('APP_KEY')
     }
   },
+  auditor: {
+    serializer: 'lucid',
+    model: 'App/Models/Auditor',
+    scheme: 'jwt',
+    uid: 'email',
+    password: 'password',
+    options: {
+      secret: Env.get('APP_KEY')
+    }
+  },
+  jwt: {
+    serializer: 'lucid',
+    model: 'App/Models/User',
+    scheme: 'jwt',
+    uid: 'email',
+    password: 'password',
+    options: {
+      secret: Env.get('APP_KEY')
+    }
+  },*/
 
   /*
   |--------------------------------------------------------------------------
