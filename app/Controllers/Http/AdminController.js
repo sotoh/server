@@ -3,8 +3,8 @@
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
-const EndUser = use('App/Models/User')
-//const Admin = use('App/Models/Admin')
+const User = use('App/Models/User')
+const Admin = use('App/Models/Admin')
 //const Auditor = use('App/Models/Auditor')
 
 /**
@@ -20,12 +20,13 @@ class AdminController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async login (request, response, auth) {    
+  async login ({ request, response, auth }) {  
+    console.log('Iteration');
     try {
-        let user = request.input('useremail')               
+        let user = request.input('useremail')        
         if(user.includes('@')) {
-          let infoUser = await EndUser.findBy('email',user)
-          if(!infoUser) {
+          let infoUser = await User.findBy('email',user)
+          if(infoUser) { //Nulls are validated with in this way. When is null it won't have access to true condition.
             let token = await auth.withRefreshToken().attempt(user,request.input('password'))
             response.accepted({
               id: infoUser.id,
@@ -35,11 +36,11 @@ class AdminController {
               token
             })
           } else {
-            response.badRequest('Usuario o Passwords incorrectos')
+            response.preconditionFailed('Usuario o Passwords incorrectos')
           }   
         } else {
-         let infoUser = await EndUser.findBy('username',user)
-          if(!infoUser) {
+         let infoUser = await User.findBy('username',user)         
+          if(infoUser) {            
             let token = await auth.authenticator('jwtUsername').withRefreshToken().attempt(user,request.input('password'))
             response.accepted({
               id: infoUser.id,
@@ -49,11 +50,11 @@ class AdminController {
               token
             })
           } else {
-            response.badRequest('Usuario o Passwords incorrectos')
+            response.preconditionFailed('Usuario o Passwords incorrectos')
           }
         }
     } catch (error) {
-        
+        console.log(error)
     }
 }
 
@@ -105,6 +106,11 @@ class AdminController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
+    try {
+      
+    } catch (error) {
+      
+    }
   }
 
   /**

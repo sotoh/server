@@ -3,18 +3,16 @@
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
-const Auditor = use('App/Models/Auditor')
+const Enterprise = use('App/Models/Enterprise')
 const User = use('App/Models/User')
-const External = use('App/Models/External')
 
 /**
- * Resourceful controller for interacting with auditors
+ * Resourceful controller for interacting with enterprises
  */
-class AuditorController {  
-
+class EnterpriseController {
   /**
-   * Show a list of all auditors.
-   * GET auditors
+   * Show a list of all enterprises.
+   * GET enterprises
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -23,16 +21,16 @@ class AuditorController {
    */
   async index ({ request, response, view }) {
     try {
-      let auditors = await Auditor.all()
-      return response.accepted(auditors)
+      let enterprises = await Enterprise.all()
+      return response.accepted(enterprises)
     } catch (error) {
-      return response.serviceUnavailable('El servidor no responde')
+      return response.internalServerError('Error del Servidor')
     }
   }
 
   /**
-   * Render a form to be used for creating a new auditor.
-   * GET auditors/create
+   * Render a form to be used for creating a new enterprise.
+   * GET enterprises/create
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -43,8 +41,8 @@ class AuditorController {
   }
 
   /**
-   * Create/save a new auditor.
-   * POST auditors
+   * Create/save a new enterprise.
+   * POST enterprises
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -65,30 +63,21 @@ class AuditorController {
         let email = request.input('email')
         let user = request.input('username')
         let pwd =  request.input('password')
-        let newAuditorUser = new User()
-        newAuditorUser.username = user 
-        newAuditorUser.email = email
-        newAuditorUser.password = pwd
-        newAuditorUser.type = 'auditor'
-        await newAuditorUser.save()
-        let newAuditor = new Auditor()
-        newAuditor.name = request.input('name')
-        newAuditor.lastname = request.input('lastname')
-        newAuditor.user_id = newAuditorUser.id
-        newAuditor.gender = request.input('gender')
-        let isExternal = request.input('external')
-        if(isExternal == 'external') {
-          newAuditor.external = true
-          await newAuditor.save()
-          let newExternal = new External()
-          newExternal.company = request.input('company')
-          newExternal.memberdate = request.input('memberdate')
-          newAuditor.external().save(newExternal)
-        } else {
-          newAuditor.external = false
-          await newAuditor.save()
-        }
-        return response.created('Auditor Creado')
+        let newEnterpriseUser = new User()
+        newEnterpriseUser.username = user 
+        newEnterpriseUser.email = email
+        newEnterpriseUser.password = pwd
+        newEnterpriseUser.type = 'enterprise'
+        await newEnterpriseUser.save()
+        let newEnterprise = new Enterprise()
+        newEnterprise.address = request.input('address')
+        newEnterprise.rfc = request.input('rfc')
+        newEnterprise.user_id = newEnterpriseUser.id
+        newEnterprise.phonenumber = request.input('phonenumber')
+        newEnterprise.name = request.input('name')        
+        newEnterprise.industry = request.input('industry')        
+        await newEnterprise.save()
+        return response.created('Empresa Creada')
       }
     } catch (error) {
       return response.internalServerError('Error del Servidor')
@@ -97,13 +86,13 @@ class AuditorController {
         return response.notAcceptable('Error del Servidor')
       } else {
         return response.preconditionFailed('El Correo ya está registrado')
-      } */     
+      }*/
     }
   }
 
   /**
-   * Display a single auditor.
-   * GET auditors/:id
+   * Display a single enterprise.
+   * GET enterprises/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -114,8 +103,8 @@ class AuditorController {
   }
 
   /**
-   * Render a form to update an existing auditor.
-   * GET auditors/:id/edit
+   * Render a form to update an existing enterprise.
+   * GET enterprises/:id/edit
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -126,8 +115,8 @@ class AuditorController {
   }
 
   /**
-   * Update auditor details.
-   * PUT or PATCH auditors/:id
+   * Update enterprise details.
+   * PUT or PATCH enterprises/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -137,8 +126,8 @@ class AuditorController {
   }
 
   /**
-   * Delete a auditor with id.
-   * DELETE auditors/:id
+   * Delete a enterprise with id.
+   * DELETE enterprises/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -148,4 +137,4 @@ class AuditorController {
   }
 }
 
-module.exports = AuditorController
+module.exports = EnterpriseController

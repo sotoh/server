@@ -9,8 +9,10 @@ class AuditorSchema extends Schema {
       table.increments()
       table.string('name')
       table.string('lastname')
-      table.string('phonenumber')
-      table.timestamps()
+      table.integer('user_id').notNullable().unique()
+      table.string('gender')
+      table.boolean('external')
+      table.timestamps() //For updates in the auditor's info
     })
   }
 

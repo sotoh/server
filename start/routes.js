@@ -33,7 +33,7 @@ Route.group(() => {
    Route.put('/:id', 'AdminController.update').as('admin.update')
    Route.patch('/:id', 'AdminController.update').as('admin.update')
    Route.resource('audits', 'AuditController').apiOnly() 
-}).prefix('admin').middleware(['authadmin'])
+}).prefix('admin')//.middleware(['authadmin'])
 
 /**Auditor Routes */
 Route.group(() => { 
@@ -41,7 +41,6 @@ Route.group(() => {
 }).middleware(['authauditor'])
 
 /**Enduser Routes */
-Route.group(() => { 
-  Route.resource('user', 'UserController').except(['index','store'])
-}).middleware(['auth'])
-
+Route.group(() => {
+   Route.resource('enterprise', 'EnterpriseController').except(['index','store']) 
+  }).middleware([])
