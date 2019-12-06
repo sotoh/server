@@ -4,7 +4,6 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const User = use('App/Models/User')
-const Admin = use('App/Models/Admin')
 //const Auditor = use('App/Models/Auditor')
 
 /**

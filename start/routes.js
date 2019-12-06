@@ -27,20 +27,21 @@ Route.post('login', 'AdminController.login')
 
 /**Admin Routes */
 Route.group(() => {
-   Route.resource('auditors', 'AuditorController').only(['index','store'])
-   Route.resource('users', 'UsersController').only(['index','store'])
+   Route.resource('auditors', 'AuditorController').only(['index','store','destroy'])
+   Route.resource('enterprises', 'EnterpriseController').only(['index','store','destroy'])
    Route.get('/:id', 'AdminController.show').as('admin.show')
    Route.put('/:id', 'AdminController.update').as('admin.update')
    Route.patch('/:id', 'AdminController.update').as('admin.update')
-   Route.resource('audits', 'AuditController').apiOnly() 
+   Route.resource('audits', 'AuditController').apiOnly()
+   Route.get('template','AuditController.templateindex')
 }).prefix('admin')//.middleware(['authadmin'])
 
 /**Auditor Routes */
 Route.group(() => { 
-  Route.resource('auditor', 'AuditorController').except(['index','store'])
+  Route.resource('auditor', 'AuditorController').except(['index','store','create','destroy'])
 }).middleware(['authauditor'])
 
 /**Enduser Routes */
 Route.group(() => {
-   Route.resource('enterprise', 'EnterpriseController').except(['index','store']) 
-  }).middleware([])
+   Route.resource('enterprise', 'EnterpriseController').except(['index','store','create','destroy']) 
+  }).middleware(['auth'])

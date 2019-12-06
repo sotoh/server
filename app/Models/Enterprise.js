@@ -4,6 +4,10 @@
 const Model = use('Model')
 
 class Enterprise extends Model {
+    audits () {
+    return this.belongsToMany('App/Models/Audit')
+    .pivotTable('audit_enterprises')
+  }
 }
 
 module.exports = Enterprise

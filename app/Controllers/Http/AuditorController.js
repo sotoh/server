@@ -52,7 +52,6 @@ class AuditorController {
    */
   async store ({ request, response }) {
     try {
-      console.log('entro')
       let emailExists = await User.findBy('email',request.input('email'))
       if (emailExists) {
         return response.preconditionFailed('El Correo ya está registrado')
@@ -78,19 +77,24 @@ class AuditorController {
         newAuditor.gender = request.input('gender')
         let isExternal = request.input('external')
         if(isExternal == 'external') {
-          newAuditor.external = true
+          console.log('external')
+          newAuditor.isExternal = true
           await newAuditor.save()
           let newExternal = new External()
           newExternal.company = request.input('company')
           newExternal.memberdate = request.input('memberdate')
           newAuditor.external().save(newExternal)
         } else {
-          newAuditor.external = false
+          console.log('internal')
+          newAuditor.isExternal = false
           await newAuditor.save()
         }
+        console.log('End of the road')
         return response.created('Auditor Creado')
+        //return response.status(201).send({message: 'Auditor Creado'})
       }
     } catch (error) {
+      console.log(error)
       return response.internalServerError('Error del Servidor')
       /*if(error) {
         console.log(error)

@@ -11,7 +11,7 @@ class AuditorSchema extends Schema {
       table.string('lastname')
       table.integer('user_id').notNullable().unique()
       table.string('gender')
-      table.boolean('external')
+      table.boolean('isExternal')
       table.timestamps() //For updates in the auditor's info
     })
   }

@@ -73,8 +73,7 @@ class EnterpriseController {
         newEnterprise.address = request.input('address')
         newEnterprise.rfc = request.input('rfc')
         newEnterprise.user_id = newEnterpriseUser.id
-        newEnterprise.phonenumber = request.input('phonenumber')
-        newEnterprise.name = request.input('name')        
+        newEnterprise.name = request.input('name')  
         newEnterprise.industry = request.input('industry')        
         await newEnterprise.save()
         return response.created('Empresa Creada')

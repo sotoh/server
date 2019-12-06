@@ -20,6 +20,18 @@ class AuditController {
   async index ({ request, response, view }) {
   }
 
+   /**
+   * Show a list of all predefined audits.
+   * GET audits
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async templateindex ({ request, response, view }) {
+  }
+
   /**
    * Render a form to be used for creating a new audit.
    * GET audits/create
