@@ -6,9 +6,9 @@ const Schema = use('Schema')
 class AuditEnterpriseSchema extends Schema {
   up () {
     this.create('audit_enterprises', (table) => {
-      table.increments()
-      table.integer('audit_id').unsigned().references('id').inTable('audits')
+      table.increments()      
       table.integer('enterprise_id').unsigned().references('id').inTable('enterprises')
+      table.integer('audit_id').unsigned().references('id').inTable('audits')
       //table.timestamps()
     })
   }

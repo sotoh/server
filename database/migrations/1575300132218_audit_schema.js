@@ -9,6 +9,7 @@ class AuditSchema extends Schema {
       table.increments()
       table.boolean('isCustom').notNullable()
       table.enu('status', ['pending', 'completed','uninitiated'], { useNative: true, enumName: 'auditstatus' }).notNullable()
+      table.string('name').notNullable()
       table.date('start_at')
       table.date('end_at')
       table.timestamps()

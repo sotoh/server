@@ -19,6 +19,19 @@ class Auditor extends Model {
       external () {
         return this.hasOne('App/Models/External')
       }
+      /*answers() {
+        return this.hasMany('App/Models/Answers')
+      }
+
+      subanswers() {
+        return this.hasMany('App/Models/SubAnswers')
+      }*/
+
+    enterprises () {
+      return this
+        .belongsToMany('App/Models/Enterprise')
+        .pivotTable('auditor_enterprises')
+    }
 }
 
 module.exports = Auditor
