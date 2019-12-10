@@ -9,6 +9,8 @@ class AuditEnterpriseSchema extends Schema {
       table.increments()      
       table.integer('enterprise_id').unsigned().references('id').inTable('enterprises')
       table.integer('audit_id').unsigned().references('id').inTable('audits')
+      table.date('assign')
+      table.enu('status', ['pending', 'completed','uninitiated'], { useNative: true, enumName: 'auditstatus' }).notNullable()
       //table.timestamps()
     })
   }

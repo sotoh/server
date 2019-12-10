@@ -29,19 +29,19 @@ Route.post('login', 'AdminController.login')
 Route.group(() => {
    Route.resource('auditors', 'AuditorController').only(['index','store','destroy'])
    Route.resource('enterprises', 'EnterpriseController').only(['index','store','destroy'])
-   Route.get('/:id', 'AdminController.show').as('admin.show')
-   Route.put('/:id', 'AdminController.update').as('admin.update')
-   Route.patch('/:id', 'AdminController.update').as('admin.update')
-   Route.resource('audits', 'AuditController').apiOnly()
+   Route.get('show', 'AdminController.show').as('admin.show')
+   Route.resource('audits', 'AuditController').apiOnly()//Removes GET resource/create and GET resource/:id/edit
+   Route.patch('auditors/assign/:id', 'AuditorController.assign')
+   Route.patch('enterprises/assign/:id', 'EnterpriseController.assign')
    Route.get('template','AuditController.templateindex')
 }).prefix('admin')//.middleware(['authadmin'])
 
 /**Auditor Routes */
 Route.group(() => { 
-  Route.resource('auditor', 'AuditorController').except(['index','store','create','destroy'])
-}).middleware(['authauditor'])
+  Route.resource('auditor', 'AuditorController').except(['index','store','create','destroy','edit'])
+})//.middleware(['authauditor'])
 
 /**Enduser Routes */
 Route.group(() => {
-   Route.resource('enterprise', 'EnterpriseController').except(['index','store','create','destroy']) 
-  }).middleware(['auth'])
+   Route.resource('enterprise', 'EnterpriseController').except(['index','store','create','destroy','edit']) 
+  })//.middleware(['auth'])

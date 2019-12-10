@@ -9,9 +9,10 @@ class SubAnswerSchema extends Schema {
       table.increments()
       table.text('observations').nullable()
       //table.integer('auditor_id').unsigned().references('id').inTable('auditors')
-      table.integer('sub_content_id').unsigned().references('id').inTable('sub_contents')
+      //table.integer('sub_content_id').unsigned().references('id').inTable('sub_contents')
       table.integer('value').notNullable()
-      table.timestamps()
+      table.date('answered')
+      //table.timestamps()
     })
   }
 

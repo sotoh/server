@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const User = use('App/Models/User')
+const Admin = use('App/Models/User')
 //const Auditor = use('App/Models/Auditor')
 
 /**
@@ -19,39 +20,48 @@ class AdminController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async login ({ request, response, auth }) {  
-    console.log('Iteration');
+  async login ({ request, response, auth }) {
     try {
-        let user = request.input('useremail')        
+        let user = request.input('useremail','false')
         if(user.includes('@')) {
           let infoUser = await User.findBy('email',user)
           if(infoUser) { //Nulls are validated with in this way. When is null it won't have access to true condition.
             let token = await auth.withRefreshToken().attempt(user,request.input('password'))
-            response.accepted({
-              id: infoUser.id,
-              username: infoUser.username,
-              email: infoUser.email,
-              type: infoUser.type,
-              token
-            })
+            if(token){
+              return response.ok({
+                id:infoUser.id,
+                email:infoUser.email,
+                type:infoUser.type,
+                username:infoUser.username,
+                token:token
+              })
+            } else {
+              response.preconditionFailed('Usuario o Passwords incorrectos')
+            }
           } else {
             response.preconditionFailed('Usuario o Passwords incorrectos')
-          }   
+          }
         } else {
          let infoUser = await User.findBy('username',user)         
           if(infoUser) {            
             let token = await auth.authenticator('jwtUsername').withRefreshToken().attempt(user,request.input('password'))
-            response.accepted({
-              id: infoUser.id,
-              username: infoUser.username,
-              email: infoUser.email,
-              type: infoUser.type,
-              token
-            })
-          } else {
+            if(token) {
+              return response.ok({
+                id:infoUser.id,
+                email:infoUser.email,
+                type:infoUser.type,
+                username:infoUser.username,
+                token:token
+              })
+            } else {
+              response.preconditionFailed('Usuario o Passwords incorrectos')
+            }
+          } 
+          else {
             response.preconditionFailed('Usuario o Passwords incorrectos')
           }
         }
+        //return response.noContent()
     } catch (error) {
         console.log(error)
     }
@@ -67,8 +77,8 @@ class AdminController {
    * @param {View} ctx.view
    */
   async index ({ request, response, view }) {
-    
-  }
+    //Not used
+  } 
 
   /**
    * Render a form to be used for creating a new admin.
@@ -80,7 +90,7 @@ class AdminController {
    * @param {View} ctx.view
    */
   async create ({ request, response, view }) {
-    
+    //Not used
   }
 
   /**
@@ -92,7 +102,7 @@ class AdminController {
    * @param {Response} ctx.response
    */
   async store ({ request, response, params }) {
-   
+   //Not used
   }
 
   /**
@@ -106,9 +116,11 @@ class AdminController {
    */
   async show ({ params, request, response, view }) {
     try {
-      
+      //await User.findBy('email', '[email protected]')
+      let admin = await Admin.findBy('type','admin')
+      return response.ok(admin)
     } catch (error) {
-      
+      return response.badRequest('Error en la peticion')
     }
   }
 
@@ -122,6 +134,7 @@ class AdminController {
    * @param {View} ctx.view
    */
   async edit ({ params, request, response, view }) {
+    //Not used
   }
 
   /**
@@ -133,6 +146,7 @@ class AdminController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    //Not used
   }
 
   /**
@@ -144,6 +158,7 @@ class AdminController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
+    //Not used
   }
 
   /**
@@ -156,8 +171,7 @@ class AdminController {
    * @param {View} ctx.view
    */
   async create ({ request, response, view }) {
-    //response.unauthorized('Unauthorized')
-    
+    //Not used
   }
   
 }

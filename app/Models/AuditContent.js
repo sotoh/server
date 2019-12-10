@@ -5,7 +5,10 @@ const Model = use('Model')
 
 class AuditContent extends Model {
     answers() {
-        return this.hasMany('App/Models/Answer')
+        return this
+        .belongsToMany('App/Models/Answer')
+        .pivotTable('answers_questions')
+        .withPivot(['assign'])
     }
 
     subcontent() {

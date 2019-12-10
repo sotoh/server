@@ -8,10 +8,15 @@ class Audit extends Model {
           return this.hasMany('App/Models/AuditContent')
       }
             
-    enterprises () {
+      enterprises () {
         return this
           .belongsToMany('App/Models/Enterprise')
           .pivotTable('audit_enterprises')
+          .withPivot(['status','assign'])
+      }
+
+      subcontents() {
+        return this.manyThrough('App/Models/AuditContent', 'subcontent')
       }
 }
 

@@ -8,7 +8,7 @@ class AuditContentSchema extends Schema {
     this.create('audit_contents', (table) => {
       table.increments()
       table.integer('audit_id').unsigned().references('id').inTable('audits')
-      table.string('question').notNullable()
+      table.text('question').notNullable()
       table.enu('type',['check','range','options','description'], { useNative: true, enumName: 'typequestion' }).notNullable()
       //table.string('type').notNullable().comment('Describes if it is a combobox, radiobutton or checkbox')
       //table.string('category').notNullable().comment('Category to describe wether it is about Security, Network, Data, etc.')

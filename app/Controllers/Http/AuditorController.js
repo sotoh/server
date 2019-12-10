@@ -5,6 +5,7 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Auditor = use('App/Models/Auditor')
 const User = use('App/Models/User')
+const Enterprise = use('App/Models/Enterprise')
 const External = use('App/Models/External')
 
 /**
@@ -23,23 +24,54 @@ class AuditorController {
    */
   async index ({ request, response, view }) {
     try {
-      let auditors = await Auditor.all()
-      return response.accepted(auditors)
+      let auditors = await Auditor
+      .query()
+      .with('external')
+      .fetch()
+      if(auditors){
+        return response.ok(auditors)
+      } else {
+        return response.noContent()
+      }
     } catch (error) {
-      return response.serviceUnavailable('El servidor no responde')
+      return response.badRequest('Error en la peticion')
     }
   }
 
-  /**
-   * Render a form to be used for creating a new auditor.
-   * GET auditors/create
+   /**
+   * Asign Enterprise to Auditor.
+   * PUT or PATCH admins
    *
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async create ({ request, response, view }) {
+  async assign ({ request, response, params }) {
+    try {
+      let auditor = await Auditor.findBy('id',params.id)
+      if(auditor) {
+        let enterprise = await Enterprise.findBy('id',request.input('enterprise',0))
+        if(enterprise) {
+          let date = request.input('date',undefined)
+          if(date) {
+            return response.badRequest('Error en la petición: fecha')
+          } else {
+            await auditor.enterprises().attach(enterprise.id, (pivot)=> {
+              pivot.assign = date
+            })
+            return response.ok('Empresa asignada')
+          }          
+        } else {
+          return response.preconditionFailed('Empresa no encontrada')
+        }
+      }else {
+        return response.preconditionFailed('Auditor no encontrado')
+      }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la petición')
+    }
   }
 
   /**
@@ -95,13 +127,7 @@ class AuditorController {
       }
     } catch (error) {
       console.log(error)
-      return response.internalServerError('Error del Servidor')
-      /*if(error) {
-        console.log(error)
-        return response.notAcceptable('Error del Servidor')
-      } else {
-        return response.preconditionFailed('El Correo ya está registrado')
-      } */     
+      return response.badRequest('Error en la petición')
     }
   }
 
@@ -115,6 +141,19 @@ class AuditorController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
+    try {
+      console.log(params)
+      let auditor = await Auditor.findBy('user_id',params.id)
+      //let admin = await User.findBy('type','admin')
+      if(auditor) {
+        return response.ok(auditor)
+      }else {        
+        return response.noContent()        
+      }
+    } catch (error) {
+      console.log(error)
+     return response.badRequest('Error en la petición') 
+    }
   }
 
   /**
@@ -127,6 +166,7 @@ class AuditorController {
    * @param {View} ctx.view
    */
   async edit ({ params, request, response, view }) {
+    //Not used
   }
 
   /**
@@ -138,6 +178,22 @@ class AuditorController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    try {
+      let auditor = await Auditor.findBy('id',params.id)
+      let external = request.input('external', auditor.isExternal)
+      if(auditor) {
+        auditor.name = request.input('name')
+        auditor.lastname = request.input('lastname')
+        auditor.gender = request.input('gender')
+        if(external) {
+          auditor.isExternal = external
+        }
+      } else {
+        return response.noContent()
+      }      
+    } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
   }
 
   /**
@@ -149,6 +205,16 @@ class AuditorController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
+    try {
+      let affectedAuditor  = await Auditor.query().where('user_id',params.id).del()
+      if(affectedAuditor == 1) {
+        return response.ok('Auditor Eliminado')
+      } else {
+        return response.notFound('Auditor no encontrado')
+      }
+    } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
   }
 }
 

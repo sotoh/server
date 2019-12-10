@@ -9,6 +9,7 @@ class AuditorEnterpriseSchema extends Schema {
       table.increments()
       table.integer('enterprise_id').unsigned().references('id').inTable('enterprises')
       table.integer('auditor_id').unsigned().references('id').inTable('auditors')
+      table.date('assign')
       //table.timestamps()
     })
   }

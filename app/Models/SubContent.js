@@ -5,7 +5,10 @@ const Model = use('Model')
 
 class SubContent extends Model {
     subanswers() {
-        return this.hasMany('App/Models/SubAnswer')
+        return this
+        .belongsToMany('App/Models/SubAnswer')
+        .pivotTable('question_subanswers')
+        .withPivot(['assign'])
     }
 }
 

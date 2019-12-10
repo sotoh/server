@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Enterprise = use('App/Models/Enterprise')
+const Audit = use('App/Models/Audit')
 const User = use('App/Models/User')
 
 /**
@@ -22,22 +23,51 @@ class EnterpriseController {
   async index ({ request, response, view }) {
     try {
       let enterprises = await Enterprise.all()
-      return response.accepted(enterprises)
+      if(enterprises) {
+        return response.ok(enterprises)
+      } else {
+        return response.noContent()
+      }     
     } catch (error) {
-      return response.internalServerError('Error del Servidor')
+      return response.badRequest('Error en la petición')
     }
   }
 
-  /**
-   * Render a form to be used for creating a new enterprise.
-   * GET enterprises/create
+   /**
+   * Asign Audit to Enterprise.
+   * PUT or PATCH admins
    *
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async create ({ request, response, view }) {
+  async assign ({ request, response, params }) {
+    try {
+      let enterprise = await Enterprise.findBy('id',params.id)
+      if(enterprise) {
+        let audit = await Audit.findBy('id',request.input('enterprise',0))
+        if(audit) {
+          let date = request.input('date',undefined)
+          if(date) {
+            return response.badRequest('Error en la petición: Fecha')
+          } else {
+            await enterprise.audits().attach(enterprise.id, (pivot)=> {
+            pivot.status = 'uninitiated'
+            pivot.assign = date
+          })
+          return response.ok('Auditoría asignada')
+        }          
+        } else {
+          return response.preconditionFailed('Auditoría no encontrada')
+        }
+      }else {
+        return response.preconditionFailed('Empresa no encontrada')
+      }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la petición')
+    }
   }
 
   /**
@@ -79,13 +109,7 @@ class EnterpriseController {
         return response.created('Empresa Creada')
       }
     } catch (error) {
-      return response.internalServerError('Error del Servidor')
-      /*if(error) {
-        console.log(error)
-        return response.notAcceptable('Error del Servidor')
-      } else {
-        return response.preconditionFailed('El Correo ya está registrado')
-      }*/
+      return response.badRequest('Error en la petición')
     }
   }
 
@@ -99,19 +123,17 @@ class EnterpriseController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
-  }
-
-  /**
-   * Render a form to update an existing enterprise.
-   * GET enterprises/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-  }
+    try {
+      let enterprise = await Enterprise.findBy('user_id',params.id)
+      if(enterprise) {
+        return response.ok(enterprise)
+      }else {
+        return response.noContent()
+      }
+    } catch (error) {
+     return response.badRequest('Error en la petición') 
+    }
+  } 
 
   /**
    * Update enterprise details.
@@ -122,6 +144,21 @@ class EnterpriseController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    try {
+      let enterprise = await Enterprise.findBy('id',params.id)
+      if(enterprise) {
+        enterprise.name = request.input('name')
+        enterprise.industry = request.input('industry')
+        enterprise.address = request.input('address')
+        enterprise.rfc = request.input('rfc')
+        await enterprise.save()
+        return response.ok('Empresa actualizada')
+      } else {
+        return response.noContent()
+      }      
+    } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
   }
 
   /**
@@ -133,6 +170,16 @@ class EnterpriseController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
+    try {
+      let affectedEnterprise  = await Enterprise.query().where('user_id',params.id).del()
+      if(affectedEnterprise == 1) {
+        return response.ok('Empresa Eliminada')
+      } else {
+        return response.notFound('Empresa no encontrada')
+      }
+    } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
   }
 }
 
