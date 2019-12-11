@@ -20,9 +20,12 @@ class EnterpriseController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index ({ params, request, response, view }) {
     try {
-      let enterprises = await Enterprise.all()
+      let enterprises = await Enterprise
+      .query()
+      .with('user')
+      .paginate(params.page, 10)
       if(enterprises) {
         return response.ok(enterprises)
       } else {
@@ -171,8 +174,9 @@ class EnterpriseController {
    */
   async destroy ({ params, request, response }) {
     try {
-      let affectedEnterprise  = await Enterprise.query().where('user_id',params.id).del()
-      if(affectedEnterprise == 1) {
+      let affectedEnterprise  = await Enterprise.query().where('user_id',params.id).delete()
+      let userDeleted = await User.query().where('id',params.id).delete()
+      if(affectedEnterprise === 1 && userDeleted ===1) {
         return response.ok('Empresa Eliminada')
       } else {
         return response.notFound('Empresa no encontrada')

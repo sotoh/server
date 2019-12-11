@@ -12,6 +12,9 @@ class Auditor extends Model {
         .belongsToMany('App/Models/Enterprise')
         .pivotTable('auditor_enterprises')
     }
+    user () {
+      return this.belongsTo('App/Models/User')
+    }
 }
 
 module.exports = Auditor

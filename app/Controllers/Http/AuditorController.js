@@ -22,12 +22,19 @@ class AuditorController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index ({ params, request, response, view }) {
     try {
+      /*let auditors = await Auditor
+      .query()
+      .with('external')
+      .with('user')
+      .forPage(params.page, 10)
+      .fetch()*/
       let auditors = await Auditor
       .query()
       .with('external')
-      .fetch()
+      .with('user')
+      .paginate(params.page, 10)
       if(auditors){
         return response.ok(auditors)
       } else {
@@ -206,13 +213,16 @@ class AuditorController {
    */
   async destroy ({ params, request, response }) {
     try {
-      let affectedAuditor  = await Auditor.query().where('user_id',params.id).del()
-      if(affectedAuditor == 1) {
+      console.log(params)
+      var affectedAuditor  = await Auditor.query().where('user_id',params.id).delete()
+      let userdeleted = await User.query().where('id',params.id).delete()
+      if(affectedAuditor === 1 && userdeleted ===1) {
         return response.ok('Auditor Eliminado')
       } else {
         return response.notFound('Auditor no encontrado')
       }
     } catch (error) {
+      console.log(error)
       return response.badRequest('Error en la peticion')
     }
   }

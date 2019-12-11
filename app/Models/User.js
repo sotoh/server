@@ -37,6 +37,12 @@ class User extends Model {
   static get hidden () {
     return ['password']
   }
+  auditor () {
+    return this.hasOne('App/Models/Auditor')
+  }
+  enterprise () {
+    return this.hasOne('App/Models/Auditor')
+  }
 }
 
 module.exports = User

@@ -27,8 +27,10 @@ Route.post('login', 'AdminController.login')
 
 /**Admin Routes */
 Route.group(() => {
-   Route.resource('auditors', 'AuditorController').only(['index','store','destroy'])
-   Route.resource('enterprises', 'EnterpriseController').only(['index','store','destroy'])
+   Route.resource('auditors', 'AuditorController').only(['store','destroy'])
+   Route.get('auditors/:page','AuditorController.index')
+   Route.resource('enterprises', 'EnterpriseController').only(['store','destroy'])
+   Route.get('enterprises/:page','EnterpriseController.index')
    Route.get('show', 'AdminController.show').as('admin.show')
    Route.resource('audits', 'AuditController').apiOnly()//Removes GET resource/create and GET resource/:id/edit
    Route.patch('auditors/assign/:id', 'AuditorController.assign')

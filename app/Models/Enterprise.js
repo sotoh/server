@@ -16,6 +16,9 @@ class Enterprise extends Model {
           .pivotTable('audit_enterprises')
           .withPivot(['status','assign'])
       }
+      user () {
+        return this.belongsTo('App/Models/User')
+      }
 }
 
 module.exports = Enterprise
