@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Audit = use('App/Models/Audit')
+const AuditContent = use('App/Models/AuditContent')
 /**
  * Resourceful controller for interacting with audits
  */
@@ -17,9 +18,12 @@ class AuditController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index ({params, request, response, view }) {
     try {
-      let audits = await Audit.query().where('isCustom', true).fetch()
+      let audits = await Audit
+      .query()
+      .with('questions')
+      .paginate(params.page, 5)
       if(audits) {
         return response.ok(audits)
       }else {
@@ -50,20 +54,7 @@ class AuditController {
     } catch (error) {
       return response.badRequest('Error en la peticion')
     }
-  }
-
-  /**
-   * Render a form to be used for creating a new audit.
-   * GET audits/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
-    //Not used
-  }
+  }  
 
   /**
    * Create/save a new audit's answer.
@@ -73,9 +64,9 @@ class AuditController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async storeAnswer ({ request, response }) {
     try {
-        
+        let audit = new Audit
     } catch (error) {
       return response.badRequest('Error en la peticion')
     }
@@ -91,13 +82,15 @@ class AuditController {
    */
   async store ({ request, response }) {
     try {
-      let custom = request.input('options', 'empty')
-      if(custom !== 'empty') {
-        return response.ok({message:'istrue'})
-      }else {
-
-      }
+      let audit = new Audit()
+      audit.name = request.input('name', 'Default')
+      audit.isCustom = true
+      let questions = await AuditContent.createMany( request.input('questions', 'Nothing'))
+      await audit.questions().saveMany(questions)
+      //await audit.questions().createMany( [request.input('questions', 'Nothing')])
+      return response.created('Auditoria Creada')
     } catch (error) {
+      console.log(error)
       return response.badRequest('Error en la peticion')
     }
   }
@@ -128,19 +121,6 @@ class AuditController {
   }
 
   /**
-   * Render a form to update an existing audit.
-   * GET audits/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-    //Not used
-  }
-
-  /**
    * Update audit details.
    * PUT or PATCH audits/:id
    *
@@ -166,7 +146,14 @@ class AuditController {
    */
   async destroy ({ params, request, response }) {
    try {
-      let affectedAudit  = await Audit.query().where('user_id',params.id).del()
+    /*const user = await User.find(1)
+    await user
+    .cars()
+    .where('name', 'mercedes')
+    .delete()*/
+      let audit = await Audit.findBy('id',params.id)
+      await audit.questions().delete()
+      let affectedAudit  = await Audit.query().where('id',params.id).del()
       //Borrar preguntas
       if(affectedAudit == 1) {
         return response.ok('Auditoría Eliminada')

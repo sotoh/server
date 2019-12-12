@@ -11,6 +11,7 @@ class Auditor extends Model {
       return this
         .belongsToMany('App/Models/Enterprise')
         .pivotTable('auditor_enterprises')
+        .withPivot(['assign'])
     }
     user () {
       return this.belongsTo('App/Models/User')

@@ -45,9 +45,37 @@ class AuditorController {
     }
   }
 
+  
+   /**
+   * Show Audistor's Enterprises.
+   * auditors/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async enterprises ({ request, response, params }) {
+    try {
+      let auditor = await Auditor.findBy('id',params.id)
+      if(auditor) {
+      let enterprises = await auditor.enterprises().fetch()
+      if(enterprises){
+        return response.ok(enterprises)
+      } else {
+        return response.noContent()
+      }
+    } else {
+      return response.preconditionFailed('Auditor no encontrado')
+    }
+    } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
+  }
+
    /**
    * Asign Enterprise to Auditor.
-   * PUT or PATCH admins
+   * PUT or PATCH auditor
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -56,21 +84,37 @@ class AuditorController {
    */
   async assign ({ request, response, params }) {
     try {
-      let auditor = await Auditor.findBy('id',params.id)
+      var equal = false;
+      var auditor = await Auditor.findBy('id',params.id)
+      let identerprise = request.input('enterprise',0)
       if(auditor) {
-        let enterprise = await Enterprise.findBy('id',request.input('enterprise',0))
-        if(enterprise) {
-          let date = request.input('date',undefined)
-          if(date) {
-            return response.badRequest('Error en la petición: fecha')
-          } else {
-            await auditor.enterprises().attach(enterprise.id, (pivot)=> {
-              pivot.assign = date
-            })
-            return response.ok('Empresa asignada')
-          }          
+        let enter = await auditor.enterprises()
+        .where('enterprise_id', identerprise)
+        .fetch()
+        let relatedEnterprise =  enter.toJSON()
+        for (const iterator of relatedEnterprise) {
+          if(iterator.id==identerprise) {
+            equal = true
+          }
+        }
+        if(equal) {
+          return response.preconditionFailed('La empresa ya está asignada a ese Auditor')
         } else {
-          return response.preconditionFailed('Empresa no encontrada')
+          let enterprise = await Enterprise.findBy('id',request.input('enterprise',0))
+          if(enterprise) {
+            let date = request.input('date',undefined)
+            if(!date) {
+              console.log(date)
+              return response.badRequest('Error en la petición: fecha')
+            } else {           
+              await auditor.enterprises().attach(enterprise.id, (pivot)=> {
+                pivot.assign = date
+              })
+              return response.ok('Auditor asignado')
+            }          
+          } else {
+            return response.preconditionFailed('Empresa no encontrada')
+          }
         }
       }else {
         return response.preconditionFailed('Auditor no encontrado')
@@ -161,19 +205,6 @@ class AuditorController {
       console.log(error)
      return response.badRequest('Error en la petición') 
     }
-  }
-
-  /**
-   * Render a form to update an existing auditor.
-   * GET auditors/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-    //Not used
   }
 
   /**

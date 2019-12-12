@@ -18,6 +18,9 @@ class Audit extends Model {
       subcontents() {
         return this.manyThrough('App/Models/AuditContent', 'subcontent')
       }
+      static get hidden () {
+        return ['start_at','end_at','created_at','updated_at']
+      }
 }
 
 module.exports = Audit

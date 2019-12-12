@@ -15,9 +15,9 @@ class AuditContent extends Model {
         return this.hasMany('App/Models/SubContent')
     }
 
-    options() {
+    /*options() {
         return this.hasMany('App/Models/Option')
-    }
+    }*/
 }
 
 module.exports = AuditContent

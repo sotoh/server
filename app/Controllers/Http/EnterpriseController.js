@@ -35,6 +35,32 @@ class EnterpriseController {
       return response.badRequest('Error en la petición')
     }
   }
+  /**
+   * Show Enterprise's Audits.
+   * GET enterprises
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async audits ({ params, request, response, view }) {
+    try {
+      let enterprise = await Enterprise.findBy('id',params.id)
+      if(enterprise) {
+        let audits = await enterprise.audits().fetch()
+      if(enterprises) {
+        return response.ok(audits)
+      } else {
+        return response.noContent()
+      }     
+      } else {
+        return response.preconditionFailed('Empresa no encontrado') 
+      }      
+    } catch (error) {
+      return response.badRequest('Error en la petición')
+    }
+  }
 
    /**
    * Asign Audit to Enterprise.
@@ -47,23 +73,39 @@ class EnterpriseController {
    */
   async assign ({ request, response, params }) {
     try {
+      var equal = false
       let enterprise = await Enterprise.findBy('id',params.id)
+      let idAudit = request.input('audits',0)
+      var auditsandDate;
+      var auditId = []
+      for (const iterator of idAudit) {
+         auditId.push(iterator.id) 
+      }
+      console.log(auditId) 
       if(enterprise) {
-        let audit = await Audit.findBy('id',request.input('enterprise',0))
-        if(audit) {
-          let date = request.input('date',undefined)
-          if(date) {
-            return response.badRequest('Error en la petición: Fecha')
-          } else {
-            await enterprise.audits().attach(enterprise.id, (pivot)=> {
+        let date = request.input('date',undefined)
+        if(date) {
+          auditsandDate = await enterprise.audits()
+          .wherePivot('assign',date)
+          .whereIn('audit_id', auditId)           
+          .fetch()          
+        } else {          
+          return response.badRequest('Error en la petición: Fecha')
+        }        
+        let relatedAudits = auditsandDate.toJSON()
+        console.log(relatedAudits)
+        if(relatedAudits.length != 0) {
+          equal = true
+        }
+        if(equal) {
+          return response.preconditionFailed('La Auditoria ya está programada para esa fecha')
+        } else {
+          await enterprise.audits().attach(enterprise.id, (pivot)=> {
             pivot.status = 'uninitiated'
             pivot.assign = date
           })
-          return response.ok('Auditoría asignada')
-        }          
-        } else {
-          return response.preconditionFailed('Auditoría no encontrada')
-        }
+        return response.ok('Auditoría asignada')
+      }
       }else {
         return response.preconditionFailed('Empresa no encontrada')
       }
