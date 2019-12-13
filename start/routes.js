@@ -50,6 +50,8 @@ Route.group(() => {
 Route.group(() => { 
   Route.resource('auditor', 'AuditorController').except(['index','store','create','destroy','edit'])
   Route.put('auditor/audits/answers/store', 'AuditController.storeAnswer')
+  Route.get('auditor/audits/:id','AuditorController.audits')   
+  Route.get('auditor/questions/:id','AuditorController.questions')
 })//.middleware(['authauditor'])
 
 /**Enduser Routes */

@@ -91,7 +91,8 @@ class EnterpriseController {
           .fetch()          
         } else {          
           return response.badRequest('Error en la petición: Fecha')
-        }        
+        }
+
         let relatedAudits = auditsandDate.toJSON()
         console.log(relatedAudits)
         if(relatedAudits.length != 0) {
@@ -100,7 +101,7 @@ class EnterpriseController {
         if(equal) {
           return response.preconditionFailed('La Auditoria ya está programada para esa fecha')
         } else {
-          await enterprise.audits().attach(enterprise.id, (pivot)=> {
+          await enterprise.audits().attach(auditId, (pivot)=> {
             pivot.status = 'uninitiated'
             pivot.assign = date
           })
@@ -216,14 +217,14 @@ class EnterpriseController {
    */
   async destroy ({ params, request, response }) {
     try {
-      let affectedEnterprise  = await Enterprise.query().where('user_id',params.id).delete()
-      let userDeleted = await User.query().where('id',params.id).delete()
-      if(affectedEnterprise === 1 && userDeleted ===1) {
+      let userDeleted = await User.query().where('id',params.id).delete()     
+      if(userDeleted ===1) {
         return response.ok('Empresa Eliminada')
       } else {
         return response.notFound('Empresa no encontrada')
       }
     } catch (error) {
+      console.log(error)
       return response.badRequest('Error en la peticion')
     }
   }

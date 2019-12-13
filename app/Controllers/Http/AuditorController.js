@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Auditor = use('App/Models/Auditor')
+const Audit = use('App/Models/Audit')
 const User = use('App/Models/User')
 const Enterprise = use('App/Models/Enterprise')
 const External = use('App/Models/External')
@@ -45,10 +46,105 @@ class AuditorController {
     }
   }
 
+   /**
+   * Show Audistor's Audits.
+   * GET auditors/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async audits ({ request, response, params }) {
+    try {
+      let auditor = await Auditor.findBy('id',params.id)
+      if(auditor) {
+        let audits = await Auditor
+      .query()
+      .where('id',params.id)
+      .with('enterprises.audits')
+      .fetch()
+      //await auditor.loadMany(['enterprises', 'audits','questions']) <-- Only allow loading those methods in the Model
+      let resp = audits.toJSON()          
+      var auditResp = []
+      for (const iterator of resp[0].enterprises) {
+        console.log(iterator.audits)
+        auditResp.push(iterator.audits)
+      }
+      return response.ok(auditResp)
+    } else {
+      return response.preconditionFailed('Auditor no encontrado')
+    }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la peticion')
+    }
+  }
+
+  /**
+   * Show Audistor's Audits.
+   * POST auditors/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async answers ({ request, response, params }) {
+    try {
+      let auditor = await Auditor.findBy('id',params.id)
+      if(auditor) {
+        let audits = await Auditor
+      .query()
+      .where('id',params.id)
+      .with('enterprises.audits')
+      .fetch()
+      //await auditor.loadMany(['enterprises', 'audits','questions']) <-- Only allow loading those methods in the Model
+      let resp = audits.toJSON()          
+      var auditResp = []
+      for (const iterator of resp[0].enterprises) {
+        console.log(iterator.audits)
+        auditResp.push(iterator.audits)
+      }
+      return response.ok(auditResp)
+    } else {
+      return response.preconditionFailed('Auditor no encontrado')
+    }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la peticion')
+    }
+  }
+
+  
+   /**
+   * Show Audistor's Questions.
+   * GET auditors/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async questions ({ request, response, params }) {
+    try {
+      let audit = await Audit.findBy('id',params.id)
+      if(audit) {
+        let questions = await audit.questions().fetch()    
+      ///let resp = .toJSON()           
+      return response.ok(questions)      
+    } else {
+      return response.preconditionFailed('Auditoría no encontrado')
+    }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la peticion')
+    }
+  }
   
    /**
    * Show Audistor's Enterprises.
-   * auditors/:id
+   * GET auditors/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -244,10 +340,9 @@ class AuditorController {
    */
   async destroy ({ params, request, response }) {
     try {
-      console.log(params)
-      var affectedAuditor  = await Auditor.query().where('user_id',params.id).delete()
+      console.log(params)     
       let userdeleted = await User.query().where('id',params.id).delete()
-      if(affectedAuditor === 1 && userdeleted ===1) {
+      if(userdeleted ===1) {
         return response.ok('Auditor Eliminado')
       } else {
         return response.notFound('Auditor no encontrado')

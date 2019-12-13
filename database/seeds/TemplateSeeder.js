@@ -171,6 +171,7 @@ class TemplateSeeder {
     { question: 'De acuerdo a la pregunta anterior, ¿está conforme con el servicio de red compartido?', type:'check' , options: 'true/false'},
     { question: '¿Se verifica de que la base de datos es accesible sólo por los usuarios autorizados, tanto en el lado del cliente como en el servidor?', type:'range' , options: 'default' },
     ]*/
+    
 
   }
 }
