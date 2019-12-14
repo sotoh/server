@@ -8,6 +8,7 @@ const Audit = use('App/Models/Audit')
 const User = use('App/Models/User')
 const Enterprise = use('App/Models/Enterprise')
 const External = use('App/Models/External')
+const Database = use('Database')
 
 /**
  * Resourceful controller for interacting with auditors
@@ -57,21 +58,32 @@ class AuditorController {
    */
   async audits ({ request, response, params }) {
     try {
-      let auditor = await Auditor.findBy('id',params.id)
+       //await auditor.loadMany(['enterprises', 'audits','questions']) <-- Only allow loading those methods in the Model
+      let auditor = await Auditor.findBy('user_id',params.user_id)
       if(auditor) {
-        let audits = await Auditor
+      /*let audits = await Auditor
       .query()
       .where('id',params.id)
-      .with('enterprises.audits')
-      .fetch()
-      //await auditor.loadMany(['enterprises', 'audits','questions']) <-- Only allow loading those methods in the Model
-      let resp = audits.toJSON()          
-      var auditResp = []
-      for (const iterator of resp[0].enterprises) {
-        console.log(iterator.audits)
-        auditResp.push(iterator.audits)
-      }
-      return response.ok(auditResp)
+      .with('enterprises.audits')      
+      .fetch()     
+      let resp = audits.toJSON()
+      console.log('hola')      
+      return response.ok(resp[0].enterprises)*/
+        //let audits = await Database
+        //.raw('select audit.id, audit.name, audit_enterprises.assign, audit_enterprises.status, enterprises.name from audits inner = ?', [username])
+
+        //.select('audits.id', 'audits.name', 'audit_enterprises.assign', 'audit_enterprises.status', 'enterprises.name as enterprise')
+
+        let audits = await Auditor
+        .query()
+        .select('audits.id', 'audits.name', 'audit_enterprises.assign', 'audit_enterprises.status', 'enterprises.name as enterprise','enterprises.id as enterpriseId')
+        .innerJoin('auditor_enterprises', 'auditors.id', 'auditor_enterprises.auditor_id')         
+        .innerJoin('enterprises','auditor_enterprises.enterprise_id','enterprises.id')
+        .innerJoin('audit_enterprises', 'enterprises.id', 'audit_enterprises.enterprise_id')  
+        .innerJoin('audits', 'audit_enterprises.audit_id', 'audits.id')
+        .where('auditors.user_id',params.user_id)
+        .paginate(params.page, 5)
+        return response.ok(audits)
     } else {
       return response.preconditionFailed('Auditor no encontrado')
     }
@@ -103,7 +115,6 @@ class AuditorController {
       let resp = audits.toJSON()          
       var auditResp = []
       for (const iterator of resp[0].enterprises) {
-        console.log(iterator.audits)
         auditResp.push(iterator.audits)
       }
       return response.ok(auditResp)
@@ -200,7 +211,6 @@ class AuditorController {
           if(enterprise) {
             let date = request.input('date',undefined)
             if(!date) {
-              console.log(date)
               return response.badRequest('Error en la petición: fecha')
             } else {           
               await auditor.enterprises().attach(enterprise.id, (pivot)=> {
@@ -289,7 +299,6 @@ class AuditorController {
    */
   async show ({ params, request, response, view }) {
     try {
-      console.log(params)
       let auditor = await Auditor.findBy('user_id',params.id)
       //let admin = await User.findBy('type','admin')
       if(auditor) {
@@ -340,7 +349,6 @@ class AuditorController {
    */
   async destroy ({ params, request, response }) {
     try {
-      console.log(params)     
       let userdeleted = await User.query().where('id',params.id).delete()
       if(userdeleted ===1) {
         return response.ok('Auditor Eliminado')
