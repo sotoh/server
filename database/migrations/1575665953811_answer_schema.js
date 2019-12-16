@@ -8,12 +8,9 @@ class AnswerSchema extends Schema {
     this.create('answers', (table) => {
       table.increments()
       table.text('observations').nullable()
-      //table.integer('auditor_id').unsigned().references('id').inTable('auditors')
-      //table.integer('audit_content_id').unsigned().references('id').inTable('audit_contents')
-      table.integer('value').notNullable()//Actualizado: 5-0 para range, 1-0 para check, para descriptivo 0-100.      
+      table.integer('value').notNullable()//Valor de la opcion: 0-100
+      table.string('option').notNullable()//Opcion seleccionada: 1-4 (5) para range, 0 para check, -1 para descriptivo.
       table.text('ofi').comment('Stands for Opportunities for Improvement')
-      table.date('answered')
-      //table.timestamps()
     })
   }
 

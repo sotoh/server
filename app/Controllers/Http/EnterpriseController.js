@@ -5,6 +5,7 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Enterprise = use('App/Models/Enterprise')
 const Audit = use('App/Models/Audit')
+const Auditor = use('App/Models/Auditor')
 const User = use('App/Models/User')
 
 /**
@@ -48,7 +49,10 @@ class EnterpriseController {
     try {
       let enterprise = await Enterprise.findBy('id',params.id)
       if(enterprise) {
-        let audits = await enterprise.audits().fetch()
+        let audits = await enterprise
+        .audits()
+        .wherePivot('status','uninitiated')
+        .fetch()
       if(enterprises) {
         return response.ok(audits)
       } else {
@@ -180,6 +184,38 @@ class EnterpriseController {
      return response.badRequest('Error en la petición') 
     }
   } 
+  
+   /**
+   * Show Audistor's Audits.
+   * GET auditors/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   * @param {View} ctx.view
+   */
+  async audits ({ request, response, params }) {
+    try {
+       //await auditor.loadMany(['enterprises', 'audits','questions']) <-- Only allow loading those methods in the Model
+      let enterprise = await Enterprise.findBy('user_id',params.user_id)
+      if(enterprise) {
+        let audits = await Enterprise
+        .query()
+        .select('audits.id', 'audits.name', 'audit_enterprises.assign', 'audit_enterprises.status', 'enterprises.name as enterprise','enterprises.id as enterpriseId')
+        .innerJoin('audit_enterprises', 'enterprises.id', 'audit_enterprises.enterprise_id')  
+        .innerJoin('audits', 'audit_enterprises.audit_id', 'audits.id')
+        .where('enterprises.user_id',params.user_id)
+        .where('audit_enterprises.status','completed')
+        .paginate(params.page, 5)
+        return response.ok(audits)
+    } else {
+      return response.preconditionFailed('Auditor no encontrado')
+    }
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la peticion')
+    }
+  }
 
   /**
    * Update enterprise details.

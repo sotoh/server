@@ -5,16 +5,16 @@ const Model = use('Model')
 
 class Answer extends Model {
    static get updatedAtColumn () {
-    return 'updated_at'
+    return null
   }
   static get createdAtColumn () {
-    return 'created_at'
+    return null
   }
   questions() {
     return this
     .belongsToMany('App/Models/AuditContent')
     .pivotTable('answers_questions')
-    .withPivot(['assign'])
+    .withPivot(['dateaudit','enterprise'])
   }
 }
 

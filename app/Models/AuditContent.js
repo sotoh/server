@@ -4,20 +4,12 @@
 const Model = use('Model')
 
 class AuditContent extends Model {
-    answers() {
+    questions() {
         return this
-        .belongsToMany('App/Models/Answer')
+        .belongsToMany('App/Models/AuditContent')
         .pivotTable('answers_questions')
-        .withPivot(['assign'])
-    }
-
-    subcontent() {
-        return this.hasMany('App/Models/SubContent')
-    }
-
-    /*options() {
-        return this.hasMany('App/Models/Option')
-    }*/
+        .withPivot(['dateaudit','enterprise'])
+      }
 }
 
 module.exports = AuditContent

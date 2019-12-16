@@ -9,6 +9,7 @@ const User = use('App/Models/User')
 const Enterprise = use('App/Models/Enterprise')
 const External = use('App/Models/External')
 const Database = use('Database')
+const Answer = use('App/Models/Answer')
 
 /**
  * Resourceful controller for interacting with auditors
@@ -82,6 +83,7 @@ class AuditorController {
         .innerJoin('audit_enterprises', 'enterprises.id', 'audit_enterprises.enterprise_id')  
         .innerJoin('audits', 'audit_enterprises.audit_id', 'audits.id')
         .where('auditors.user_id',params.user_id)
+        .where('audit_enterprises.status','uninitiated')
         .paginate(params.page, 5)
         return response.ok(audits)
     } else {
@@ -138,20 +140,36 @@ class AuditorController {
    * @param {View} ctx.view
    */
   async questions ({ request, response, params }) {
-    try {
-      let audit = await Audit.findBy('id',params.id)
-      if(audit) {
-        let questions = await audit.questions().fetch()    
-      ///let resp = .toJSON()           
-      return response.ok(questions)      
+    try {      
+      //let audit = await Audit.findBy('id',params.id)
+      var questions = []
+      let enterpriseQuestions = await Enterprise
+      .query()
+      .where('id',params.enterprise)
+      .with('audits.questions')
+      .fetch()
+      if(enterpriseQuestions) {
+      //let questions = await audit.questions().where('audit_id', auditId).fetch()
+      let resp = enterpriseQuestions.toJSON()
+      if(resp[0]) {
+        for (const iterator of resp[0].audits) {
+          //console.log(iterator.id)
+            if(iterator.id == params.audit) {
+              questions = iterator.questions
+            }
+        }
+        return response.ok(questions)
+      } else {
+        return response.noContent()
+      }
     } else {
-      return response.preconditionFailed('Auditoría no encontrado')
+      return response.preconditionFailed('No hay auditorias')
     }
     } catch (error) {
       console.log(error)
       return response.badRequest('Error en la peticion')
     }
-  }
+  }   
   
    /**
    * Show Audistor's Enterprises.

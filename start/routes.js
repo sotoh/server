@@ -49,12 +49,15 @@ Route.group(() => {
 /**Auditor Routes */
 Route.group(() => { 
   Route.resource('auditor', 'AuditorController').except(['index','store','create','destroy','edit'])
-  Route.put('auditor/audits/answers/store', 'AuditController.storeAnswer')
+  Route.post('auditor/audits/answers/store', 'AuditController.storeAnswer')
   Route.get('auditor/audits/:user_id/:page','AuditorController.audits')   
-  Route.get('auditor/questions/:id','AuditorController.questions')
+  Route.get('auditor/questions/:enterprise/:audit','AuditorController.questions')
 })//.middleware(['authauditor'])
 
 /**Enduser Routes */
 Route.group(() => {
    Route.resource('enterprise', 'EnterpriseController').except(['index','store','create','destroy','edit']) 
+   Route.get('enterprise/score/:id','AuditController.score')
+   Route.get('enterprise/ofi/:id','AuditController.ofi')
+   Route.get('enterprise/audits/:user_id/:page','EnterpriseController.audits')
   })//.middleware(['auth'])

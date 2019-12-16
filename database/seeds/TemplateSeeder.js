@@ -11,7 +11,6 @@
 */
 const Audit = use('App/Models/Audit')
 const AuditContent = use('App/Models/AuditContent')
-const Option = use('App/Models/Option')
 
 /** @type {import('@adonisjs/lucid/src/Factory')} */
 const Factory = use('Factory')

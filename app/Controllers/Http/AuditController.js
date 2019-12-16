@@ -5,6 +5,10 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Audit = use('App/Models/Audit')
 const AuditContent = use('App/Models/AuditContent')
+const Enterprise = use('App/Models/Enterprise')
+const Database = use('Database')
+const Answer = use('App/Models/Answer')
+
 /**
  * Resourceful controller for interacting with audits
  */
@@ -66,8 +70,88 @@ class AuditController {
    */
   async storeAnswer ({ request, response }) {
     try {
-        let audit = new Audit
+      let answers = request.input('answers', []);
+      let audit = request.input('audit', 0)
+      let enterprise = await Enterprise.findBy('id',request.input('enterprise', 0))
+      let date = request.input('date')
+      if(enterprise) {
+        //Actualizar el estado de la auditoria como completado
+        //console.log(answers)
+        await Database
+        .raw('update audit_enterprises SET status = ?, assign = ? WHERE enterprise_id = ? AND audit_id = ?',
+         ['completed',date, enterprise.id, audit])
+        
+         /*await enterprise
+        .audits()
+        .pivotQuery()
+        .where('id',audit)
+        .update({ status:'completed'})*/
+
+        //Subir las Respuestas
+        if(answers.length !=0) {
+          if(date) {
+            var amount = 0;
+          for (const iterator of answers) {
+            switch(iterator.type) {
+              case 'iso': {
+                let newAnswer = new Answer()
+                  newAnswer.value = iterator.value
+                  newAnswer.option = iterator.option
+                  newAnswer.ofi = iterator.ofi 
+                  await newAnswer.save()
+                  await newAnswer.questions().attach(iterator.question, (pivot) => {
+                    pivot.enterprise = enterprise.id
+                    pivot.dateaudit = date
+                  })
+              } break;
+              case 'default': {
+                let newAnswer = new Answer()
+                newAnswer.value = iterator.value
+                newAnswer.option = iterator.option
+                newAnswer.ofi = iterator.ofi 
+                await newAnswer.save()
+                await newAnswer.questions().attach(iterator.question, (pivot) => {
+                  pivot.enterprise = enterprise.id
+                  pivot.dateaudit = date
+                })
+              } break;
+              case 'true/false': {
+                let newAnswer = new Answer()
+                newAnswer.value = iterator.value
+                newAnswer.option = iterator.option
+                newAnswer.ofi = iterator.ofi 
+                await newAnswer.save()
+                await newAnswer.questions().attach(iterator.question, (pivot) => {
+                  pivot.enterprise = enterprise.id
+                  pivot.dateaudit = date
+                })
+              } break;
+              case 'description': {
+                let newAnswer = new Answer()
+                newAnswer.observations = iterator.observations
+                newAnswer.value = iterator.value
+                newAnswer.option = iterator.option
+                newAnswer.ofi = iterator.ofi 
+                await newAnswer.save()
+                await newAnswer.questions().attach(iterator.question, (pivot) => {
+                  pivot.enterprise = enterprise.id
+                  pivot.dateaudit = date
+                })
+              } break;
+            } 
+          }   
+          return response.ok('Terminado')
+          } else {
+            return response.preconditionFailed('Error, debera reiniciar el proceso de las auditorías')
+          }
+        } else {
+          return response.preconditionFailed('No respuestas contestadas')
+        }
+      }else {
+        return response.preconditionFailed('No existe la Empresa')
+      }
     } catch (error) {
+      console.log(error);
       return response.badRequest('Error en la peticion')
     }
   }
@@ -132,6 +216,85 @@ class AuditController {
     try {
       
     } catch (error) {
+      return response.badRequest('Error en la peticion')
+    }
+  }
+
+   /**
+   * Retrieve Answers.
+   * GET audits/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async ofi ({ params, request, response }) {
+    try {
+      let date = request.input('date', 0)
+      let audit = request.input('audit', 0)
+      let enterprise = await Enterprise.findBy('id',params.id)
+      if(enterprise) {
+      if(date) {
+        let resp = await Answer.query()
+        .select('answers.value','answers.ofi')
+        .innerJoin('answers_questions','answers.id','answers_questions.answer_id')
+        .innerJoin('audit_contents','answers_questions.audit_content_id','audit_contents.id')        
+        .where('audit_contents.audit_id', audit )
+        .where('answers_questions.dateaudit',date)        
+        .where('answers_questions.enterprise', enterprise.id)
+        .fetch()
+        if(resp) {
+          return response.ok(resp)
+        } else {
+          return response.noContent()
+        }
+      } else {
+        return response.preconditionFailed('Error en la peticion: Fecha')
+      } 
+      } else {
+        return response.preconditionFailed('Empresa no encontrada')
+      }     
+    } catch (error) {
+      console.log(error)
+      return response.badRequest('Error en la peticion')
+    }
+  }
+
+   /**
+   * Retrieve Answers.
+   * GET audits/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async score ({ params, request, response }) {
+    try {
+      let date = request.input('date', 0)
+      let audit = request.input('audit', 0)
+      let enterprise = await Enterprise.findBy('id',params.id)
+      if(enterprise) {
+      if(date) {        
+        let resp = await Answer.query()
+        .innerJoin('answers_questions','answers.id','answers_questions.answer_id')
+        .innerJoin('audit_contents','answers_questions.audit_content_id','audit_contents.id')        
+        .where('audit_contents.audit_id', audit )
+        .where('answers_questions.dateaudit',date)        
+        .where('answers_questions.enterprise', enterprise.id)
+        .avg('answers.value')
+        if(resp) {
+          return response.ok(resp[0].avg)
+        } else {
+          return response.noContent()
+        }
+      } else {
+        return response.preconditionFailed('Error en la peticion: Fecha')
+      } 
+      } else {
+        return response.preconditionFailed('Empresa no encontrada')
+      }     
+    } catch (error) {
+      console.log(error)
       return response.badRequest('Error en la peticion')
     }
   }

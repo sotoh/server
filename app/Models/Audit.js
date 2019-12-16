@@ -14,12 +14,9 @@ class Audit extends Model {
           .pivotTable('audit_enterprises')
           .withPivot(['status','assign'])
       }
-
-      subcontents() {
-        return this.manyThrough('App/Models/AuditContent', 'subcontent')
-      }
+      
       static get hidden () {
-        return ['start_at','end_at','created_at','updated_at']
+        return ['created_at','updated_at']
       }
 }
 

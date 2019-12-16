@@ -9,7 +9,8 @@ class AnswersQuestionsSchema extends Schema {
       table.increments()
       table.integer('answer_id').unsigned().references('id').inTable('answers')
       table.integer('audit_content_id').unsigned().references('id').inTable('audit_contents')
-      table.date('assign')
+      table.date('dateaudit')
+      table.integer('enterprise').notNullable()
     })
   }
 
